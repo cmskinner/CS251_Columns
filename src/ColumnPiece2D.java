@@ -1,5 +1,8 @@
 /**
- * Created by chris on 23-Apr-17.
+ * Christopher Skinner
+ * 2017 - April - 24
+ * Class: 251
+ * Section: 001
  */
 
 public class ColumnPiece2D implements Object2D, Cloneable{

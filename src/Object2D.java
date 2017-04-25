@@ -1,6 +1,10 @@
 /**
- * Created by chris on 23-Apr-17.
+ * Christopher Skinner
+ * 2017 - April - 24
+ * Class: 251
+ * Section: 001
  */
+
 public interface Object2D {
 
     public static class Dimension2D {
