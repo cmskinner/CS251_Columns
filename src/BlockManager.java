@@ -224,6 +224,10 @@ public class BlockManager {
         }
     }
 
+    public int getRemovedTiles() {
+        return removedTiles;
+    }
+
     /**
      * Checks for white pieces in the board and if there is a white piece, it
      * deletes it and moves it down 5 or less times (since 5 is the maximum
