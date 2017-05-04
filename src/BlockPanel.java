@@ -6,6 +6,8 @@ import java.awt.*;
  */
 public class BlockPanel extends JPanel{
 
+    private boolean DB = false;
+
     protected static final int CELL_SIZE = 30;
     protected static final Color DEFAULT_BACKGROUND_COLOUR = Color.BLACK;
 
@@ -14,6 +16,8 @@ public class BlockPanel extends JPanel{
     protected final int cellSize;
     protected final Color backgroundColour;
     protected final int hiddenRows;
+
+    private int removedTiles = 0;
 
     protected Block[][] grid;
 
@@ -28,6 +32,7 @@ public class BlockPanel extends JPanel{
         setBackground(backgroundColour);
         setPreferredSize(new Dimension(numCols*cellSize,
                 (numRows-hiddenRows)*cellSize));
+        System.out.println("numROWS: " + numRows + " numCols: " + numCols);
     }
 
     public BlockPanel(int numRows, int numCols, int cellSize, Color backgroundColor) {
@@ -46,17 +51,19 @@ public class BlockPanel extends JPanel{
         }
     }
 
-    public void placeObject(Object2D object2D, int row, int col) {
-        Object2D.Dimension2D dim = object2D.getDimension();
+    public void placeObject(ColumnPiece2D object2D, int row, int col) {
+        ColumnPiece2D.Dimension2D dim = object2D.getDimension();
         for (int i = 0; i < dim.getHeight(); ++i) {
             for (int j = 0; j < dim.getWidth(); ++j) {
                 Block b = object2D.getBlockAt(i, j);
                 if (b != null) {
                     grid[row + i][col + j] = b;
+                    System.out.println("BlockPanel Placed");
                 }
             }
         }
     }
+
 
     protected void paintBlock(Graphics g, Block b, int row, int col) {
         if(row >= hiddenRows) {

@@ -26,13 +26,9 @@ public class ColumnPiece2D implements Object2D, Cloneable{
      */
     public void rotate() {
         Block holdingValue = column[0];
-        for (int i = 0; i < column.length; i++ ) {
-            if (i == column.length - 1) {
-                column[column.length - 1] = holdingValue;
-            }else  {
-                column[i - 1] = column[i];
-            }
-        }
+        column[0] = column[1];
+        column[1] = column[2];
+        column[2] = holdingValue;
     }
 
     /**

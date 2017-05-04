@@ -28,7 +28,7 @@ public class Columns extends JFrame implements GameBoard.ScoreListener{
         super("Columns");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        board = new GameBoard();
+        GameBoard board = new GameBoard();
         board.addScoreListener(this);
         timer = new Timer(DELAY, board);
         timer.setInitialDelay(0);

@@ -55,7 +55,7 @@ public class BlockManager {
      *
      * @param columnToStartIn
      */
-    public void newPiece(int columnToStartIn) {
+    public ColumnPiece2D newPiece(int columnToStartIn) {
         Block[] newColumn = new Block[3];
         for (int i = 0; i < 3; i++ ) {
             int randNum = (Math.abs(rnd.nextInt())%4);
@@ -65,7 +65,8 @@ public class BlockManager {
         }
 
         ColumnPiece2D piece = new ColumnPiece2D(newColumn);
-        dropPiece(piece, columnToStartIn);
+        return piece;
+//        dropPiece(piece, columnToStartIn);
 
 //        int j = 0;
 //        for (int i = rows - 1; i > rows - 4; i--) {
@@ -291,5 +292,4 @@ public class BlockManager {
         }
         System.out.println("");
     }
-
 }
