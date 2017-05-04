@@ -45,6 +45,7 @@ public class BlockManager {
         this.board = new Block[rows][columns];
         this.boardRemoval = new int[rows][columns];
         this.rnd = rnd;
+        int randNum = (int)Math.random();
         rnd.setSeed(1);
         createGameBoard();
     }

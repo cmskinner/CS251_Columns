@@ -13,6 +13,8 @@ import java.util.Set;
  */
 public class GameBoard extends BlockPanel implements ActionListener{
 
+    private boolean DB = false;
+
     public static class ScoreEvent {
         public final int score;
         public final int lines;
@@ -62,6 +64,7 @@ public class GameBoard extends BlockPanel implements ActionListener{
     private int row;
     private int col;
 
+    private int boardRemoval[][];
     private BlockManager bm;
 
     private final Color[] colorArray = {Color.RED, Color.BLUE, Color.YELLOW,
@@ -76,6 +79,7 @@ public class GameBoard extends BlockPanel implements ActionListener{
             backgroundColour, int hidden) {
         super(numRows, numCols, cellSize, backgroundColour, hidden);
         bm = new BlockManager(numRows, numCols);
+        this.boardRemoval = new int[numRows][numCols];
 //        this.rnd = rnd;
 //        rnd.setSeed(1);
         System.out.println("Starting the Gameboard...");
@@ -85,46 +89,37 @@ public class GameBoard extends BlockPanel implements ActionListener{
                 if (isPlaying) {
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_DOWN:
-                            System.out.println("DOWN");
                             moveCurrentDown(false);
                             break;
                         case KeyEvent.VK_LEFT:
-                            System.out.println("LEFT");
                             moveCurrentLeft();
                             break;
                         case KeyEvent.VK_RIGHT:
-                            System.out.println("RIGHT");
                             moveCurrentRight();
                             break;
                         case KeyEvent.VK_UP:
-                            System.out.println("UP");
                             rotateCurrent();
                             break;
                         case KeyEvent.VK_S:
-                            System.out.println("DOWN");
                             moveCurrentDown(false);
                             break;
                         case KeyEvent.VK_A:
-                            System.out.println("LEFT");
                             moveCurrentLeft();
                             break;
                         case KeyEvent.VK_D:
-                            System.out.println("RIGHT");
                             moveCurrentRight();
                             break;
                         case KeyEvent.VK_W:
-                            System.out.println("UP");
                             rotateCurrent();
                             break;
                         case KeyEvent.VK_SPACE:
-                            System.out.println("SPACE");
                             moveCurrentDown(true);
+                            requestFocus();
                             break;
                     }
                 }
             }
         });
-        System.out.println("End of constructor");
     }
 
     public GameBoard() {
@@ -208,19 +203,41 @@ public class GameBoard extends BlockPanel implements ActionListener{
         }
     }
 
+    //TODO figure out how to get this repaint to work.
     private boolean placeIfTouchingBottom() {
         if(isTouchingBottom()) {
+
+            repaint(0);
+            revalidate();
+            repaint(0);
+
             placeObject(currentShape, row , col);
-            if (bm.checkForMatch()) {
-                bm.removeTiles();
-            }
 //            updateLines();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    repaint(5);
+                }
+            });
             chooseNextShape();
-            System.out.println("placed and choosen next shape");
+            while (checkForMatch()) {
+                turnTilesWhite();
+
+
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ie) {
+                    System.out.println("Interrupted Exception caught");
+                }
+                removeTiles();
+                moveDown();
+                updateScoreListeners();
+            }
+            System.out.println("placed and got next shape");
             return true;
         }
         return false;
     }
+
 
     private boolean isOverlappingBottom() {
         Object2D.Dimension2D dim = currentShape.getDimension();
@@ -325,6 +342,157 @@ public class GameBoard extends BlockPanel implements ActionListener{
             }
         }
         return false;
+    }
+
+    /*
+    TODO not identifying 3 in a row correctly, will sometimes grab an extra
+    that is not in the 3 in a row, and sometimes doesn't identify the 3 in
+    the row.
+
+    Not identifying in the 3 in a row: bottom left corner.
+     */
+    public boolean checkForMatch() {
+        boolean foundMatch = false;
+        for (int i = 0; i < ROWS + HIDDEN; i++) {
+            for (int j = 0; j < COLS; j++) {
+                boardRemoval[i][j] = 0;
+            }
+        }
+
+        int directionRow[] = {-1, 0, 1, 1};
+        int directionColumn[] = {1, 1, 1, 0};
+        int counter = 0;
+        Block currentMatchBlock = null;
+
+        for (int direction = 0; direction < 4; direction++) {
+            System.out.println("Direction: " + direction);
+            for (int i = HIDDEN; i < ROWS + HIDDEN; i++) {
+                for (int j = 0; j < COLS; j++) {
+                    if (DB) System.out.println("ROW: " + i + ", COLUMN: " + j);
+                    if ((i + directionRow[direction] >= ROWS + HIDDEN) || (j +
+                            directionColumn[direction] >= COLS)) {
+                        if (DB) System.out.println("1st Continuing.");
+                        continue;
+                    }
+                    if ((i + 2*directionRow[direction] >= ROWS + HIDDEN) || (j +
+                            2*directionColumn[direction] >= COLS)) {
+                        if (DB) System.out.println("2nd Continuing.");
+                        continue;
+                    }
+                    System.out.println("Is current Match Block null? " +
+                            (currentMatchBlock == null));
+                    if (currentMatchBlock == null) {
+                        System.out.println("HERE");
+                        if (grid[i][j] == null) {
+                            continue;
+                        } else {
+                            currentMatchBlock = grid[i][j];
+                        }
+//                        System.out.println(grid[i][j].toString());
+//                        currentMatchBlock = grid[i][j];
+//                        System.out.println("Current Match Block: " +
+//                                currentMatchBlock.toString());
+                    }
+
+                    System.out.println(currentMatchBlock.toString());
+                    if (currentMatchBlock.toString().equals("W ")) {
+//                        System.out.println("Throwing out: " + currentMatchBlock.toString());
+                        currentMatchBlock = null;
+                        continue;
+                    } else {
+//                        System.out.println("HERE");
+                        if (grid[i + directionRow[direction]][j +
+                                directionColumn[direction]] == null) {
+                            continue;
+                        }
+                        if (grid[i + 2*directionRow[direction]][j +
+                                2*directionColumn[direction]] == null) {
+                            continue;
+                        }
+                        if (currentMatchBlock.toString().equals(grid[i +
+                                directionRow[direction]][j +
+                                directionColumn[direction]].toString())) {
+
+                            counter++;
+                            if (currentMatchBlock.toString().equals(grid[i +
+                                    2*directionRow[direction]][j +
+                                    2*directionColumn[direction]].toString())) {
+                                if (DB) System.out.println("2nd Counter " +
+                                        "Increase\n");
+                                counter++;
+
+
+                            }
+                        }
+                        if (counter == 2) {
+                            System.out.println("Counter = 2");
+                            foundMatch = true;
+                            boardRemoval[i][j] = 1;
+                            boardRemoval[i + directionRow[direction]][j +
+                                    directionColumn[direction]] = 1;
+                            boardRemoval[i + 2*directionRow[direction]][j +
+                                    2*directionColumn[direction]] = 1;
+//                            for (int rmI = 0; rmI < rows; rmI++) {
+//                                for (int rmJ = 0; rmJ < columns; rmJ++) {
+//                                    if (boardRemoval[rmI][rmJ] == 1) {
+//                                        board[rmI][rmJ] = new Block(Color
+//                                                .WHITE, Color.WHITE);
+//                                        removedTiles++;
+//                                    }
+//                                }
+//                            }
+                        }
+                        counter = 0;
+                        currentMatchBlock = null;
+                    }
+                }
+            }
+        }
+
+        return foundMatch;
+    }
+
+    public void turnTilesWhite() {
+        System.out.println("Removing tiles...");
+        for (int rmI = 0; rmI < ROWS + HIDDEN; rmI++) {
+            for (int rmJ = 0; rmJ < COLS; rmJ++) {
+                if (boardRemoval[rmI][rmJ] == 1) {
+                    grid[rmI][rmJ] = new Block(Color.WHITE, Color.WHITE);
+                }
+            }
+        }
+    }
+
+    public void removeTiles() {
+        System.out.println("Removing tiles...");
+        for (int rmI = 0; rmI < ROWS + HIDDEN; rmI++) {
+            for (int rmJ = 0; rmJ < COLS; rmJ++) {
+                if (boardRemoval[rmI][rmJ] == 1) {
+                    grid[rmI][rmJ] = null;
+                    score++;
+                }
+            }
+        }
+    }
+
+    public void moveDown() {
+        System.out.println("Total tiles removed: " + score);
+        for (int j = 0; j < COLS; j++) {
+            for (int i = ROWS + HIDDEN - 1; i >= 0; i--) {
+                int counter = 0;
+                System.out.println("ROWS: " + i + " COLS: " + j);
+
+                while (grid[i][j] == null) {
+                    for (int k = i; k > 0; k--) {
+                        grid[k][j] = grid[k - 1][j];
+                        System.out.println("GG");
+                    }
+                    counter++;
+                    if (counter == 5) break;
+                }
+
+            }
+        }
     }
 
     public static void main(String args[]) {

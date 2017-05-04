@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Created by chris on 01-May-17.
@@ -63,6 +64,7 @@ public class BlockPanel extends JPanel{
             }
         }
     }
+
 
 
     protected void paintBlock(Graphics g, Block b, int row, int col) {
