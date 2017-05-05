@@ -214,7 +214,7 @@ public class BlockManager {
      * double array.
      */
     public void removeTiles() {
-        System.out.println("Removing tiles...");
+//        System.out.println("Removing tiles...");
         for (int rmI = 0; rmI < rows; rmI++) {
             for (int rmJ = 0; rmJ < columns; rmJ++) {
                 if (boardRemoval[rmI][rmJ] == 1) {

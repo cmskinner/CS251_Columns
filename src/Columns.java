@@ -1,3 +1,10 @@
+/**
+ * Christopher Skinner
+ * 2017 - April - 24
+ * Class: 251
+ * Section: 001
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -69,6 +76,7 @@ public class Columns extends JFrame implements GameBoard.ScoreListener{
         getContentPane().add(boardPanel, BorderLayout.CENTER);
         getContentPane().add(buttonPanel, BorderLayout.PAGE_END);
         getContentPane().add(rightPanel, BorderLayout.LINE_END);
+        setPreferredSize(new Dimension(500,700));
         pack();
     }
 

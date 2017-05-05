@@ -1,3 +1,10 @@
+/**
+ * Christopher Skinner
+ * 2017 - April - 24
+ * Class: 251
+ * Section: 001
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,12 +16,20 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * Created by chris on 01-May-17.
+ * This class is the bread and button essentially. It extends what makes the
+ * grid and places the blocks and then makes it so the blocks move, can be
+ * moved, rotated, and handles all of the scoring and checking to see if
+ * there is matches.
+ *
+ * This was adapted from Brooke Chenoweth's GameBoard from Tetris
  */
 public class GameBoard extends BlockPanel implements ActionListener{
 
     private boolean DB = false;
 
+    /**
+     * This class handles the ScoreEvent
+     */
     public static class ScoreEvent {
         public final int score;
         public final int lines;
@@ -32,6 +47,9 @@ public class GameBoard extends BlockPanel implements ActionListener{
         void updateScore(ScoreEvent ev);
     }
 
+    /**
+     * ShapeEvent
+     */
     public static class ShapeEvent {
         private final Object2D next;
         private final Object2D current;
@@ -75,6 +93,15 @@ public class GameBoard extends BlockPanel implements ActionListener{
 
     private Random rnd = new Random();
 
+    /**
+     * Constructor to handle the action listeners and initalize the
+     * boardRemoval and the BlockManagers
+     * @param numRows
+     * @param numCols
+     * @param cellSize
+     * @param backgroundColour
+     * @param hidden
+     */
     public GameBoard(int numRows, int numCols, int cellSize, Color
             backgroundColour, int hidden) {
         super(numRows, numCols, cellSize, backgroundColour, hidden);
@@ -90,6 +117,7 @@ public class GameBoard extends BlockPanel implements ActionListener{
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_DOWN:
                             moveCurrentDown(false);
+
                             break;
                         case KeyEvent.VK_LEFT:
                             moveCurrentLeft();
@@ -122,6 +150,9 @@ public class GameBoard extends BlockPanel implements ActionListener{
         });
     }
 
+    /**
+     * Default GameBoard with default initalization.
+     */
     public GameBoard() {
         this(ROWS+HIDDEN, COLS, CELL_SIZE, DEFAULT_BACKGROUND_COLOUR, HIDDEN);
     }
@@ -132,32 +163,37 @@ public class GameBoard extends BlockPanel implements ActionListener{
         }
     }
 
+    /**
+     * adds the score listener
+     * @param listener
+     */
     public void addScoreListener(ScoreListener listener) {
         scoreListeners.add(listener);
     }
 
+    /**
+     * updates the score listener
+     */
     private void updateScoreListeners() {
         ScoreEvent event = new ScoreEvent(score, lines, level, gameOver);
         for(ScoreListener listener : scoreListeners) {
             listener.updateScore(event);
         }
+
     }
 
-//    public void addShapeListener(ShapeListener listener) {
-//        shapeListeners.add(listener);
-//    }
-//
-//    private void updateShapeListeners() {
-//        ShapeEvent event = new ShapeEvent(nextShape, currentShape);
-//        for(ShapeListener listener : shapeListeners) {
-//            listener.updateShape(event);
-//        }
-//    }
-
+    /**
+     * This was never needed in the end.
+     * @param color
+     * @return
+     */
     private Block makeBlock(Color color) {
         return new Block(color, Color.WHITE);
     }
 
+    /**
+     * Generates the next shape and makes it spawn
+     */
     private void chooseNextShape() {
 
         int shapeWidth = currentShape == null ? 0 : currentShape.getDimension().getWidth();
@@ -175,18 +211,25 @@ public class GameBoard extends BlockPanel implements ActionListener{
         }
     }
 
+    /**
+     * Are we playing?
+     * @param isPlaying
+     */
     public void setPlaying(boolean isPlaying) {
         this.isPlaying = isPlaying;
         if (isPlaying) {
             while(currentShape == null) {
                 chooseNextShape();
-                System.out.println("Makes it");
+//                System.out.println("Makes it");
             }
         }
     }
 
 
-
+    /**
+     * Paint Component for the object.
+     * @param g
+     */
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -204,6 +247,12 @@ public class GameBoard extends BlockPanel implements ActionListener{
     }
 
     //TODO figure out how to get this repaint to work.
+
+    /**
+     * Checks to see if the piece is touching the bottom, attempts to
+     * repaint, place blocks, and choose the next shape.
+     * @return
+     */
     private boolean placeIfTouchingBottom() {
         if(isTouchingBottom()) {
 
@@ -218,27 +267,19 @@ public class GameBoard extends BlockPanel implements ActionListener{
                     repaint(5);
                 }
             });
+
             chooseNextShape();
-            while (checkForMatch()) {
-                turnTilesWhite();
-
-
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException ie) {
-                    System.out.println("Interrupted Exception caught");
-                }
-                removeTiles();
-                moveDown();
-                updateScoreListeners();
-            }
-            System.out.println("placed and got next shape");
+//            System.out.println("placed and got next shape");
             return true;
         }
         return false;
     }
 
 
+    /**
+     * Is there an overlap?
+     * @return
+     */
     private boolean isOverlappingBottom() {
         Object2D.Dimension2D dim = currentShape.getDimension();
         for(int i = dim.getHeight()-1; i >= 0; --i) {
@@ -254,15 +295,29 @@ public class GameBoard extends BlockPanel implements ActionListener{
         return false;
     }
 
+    /**
+     * This essentially is checking to see if there is matches with blocks
+     * ever tick (this is how I got the board to repaint as much as it does).
+     * It was a bit of a hack around.
+     * @param dropPiece
+     */
     private void moveCurrentDown(boolean dropPiece) {
         boolean placed = false;
         do {
             row++;
             placed = placeIfTouchingBottom();
+            moveDown();
+            checkForMatch();
+            turnTilesWhite();
+            removeTiles();
+            moveDown();
         } while(dropPiece && !placed);
         repaint();
     }
 
+    /**
+     * Move the current piece left
+     */
     private void moveCurrentLeft() {
         if(!isTouchingLeft()) {
             col--;
@@ -271,6 +326,9 @@ public class GameBoard extends BlockPanel implements ActionListener{
         }
     }
 
+    /**
+     * move the current piece right
+     */
     private void moveCurrentRight() {
         if(!isTouchingRight()) {
             col++;
@@ -279,6 +337,10 @@ public class GameBoard extends BlockPanel implements ActionListener{
         }
     }
 
+    /**
+     * Rotate the current blocks within the piece using the ColumnPiece2D
+     * rotate method.
+     */
     private void rotateCurrent() {
         currentShape.rotate();
         adjustPosition();
@@ -286,6 +348,9 @@ public class GameBoard extends BlockPanel implements ActionListener{
         repaint();
     }
 
+    /**
+     * Changes the way the block appears.
+     */
     private void adjustPosition() {
         Object2D.Dimension2D dim = currentShape.getDimension();
         if(col + dim.getWidth() > numCols) {
@@ -299,6 +364,10 @@ public class GameBoard extends BlockPanel implements ActionListener{
         }
     }
 
+    /**
+     * Is it touching the bottom? A simple checker used for other methods.
+     * @return true or false
+     */
     private boolean isTouchingBottom() {
         Object2D.Dimension2D dim = currentShape.getDimension();
         for(int i = dim.getHeight()-1; i >= 0; --i) {
@@ -314,6 +383,11 @@ public class GameBoard extends BlockPanel implements ActionListener{
         return false;
     }
 
+    /**
+     * Is it touching the left? Used to make sure the player cannot go off
+     * the board
+     * @return true or false
+     */
     private boolean isTouchingLeft() {
         Object2D.Dimension2D dim = currentShape.getDimension();
         for(int i = 0; i < dim.getHeight(); ++i) {
@@ -329,6 +403,12 @@ public class GameBoard extends BlockPanel implements ActionListener{
         return false;
     }
 
+    /**
+     * Is it touching the right? Used to make sure the player cannot go off
+     * the board
+     * @return true or false
+     *
+     */
     private boolean isTouchingRight() {
         Object2D.Dimension2D dim = currentShape.getDimension();
         for(int i = 0; i < dim.getHeight(); ++i) {
@@ -351,6 +431,11 @@ public class GameBoard extends BlockPanel implements ActionListener{
 
     Not identifying in the 3 in a row: bottom left corner.
      */
+
+    /**
+     * Checks for the 3+ in a row match. The magic algorithm
+     * @return true or false
+     */
     public boolean checkForMatch() {
         boolean foundMatch = false;
         for (int i = 0; i < ROWS + HIDDEN; i++) {
@@ -365,7 +450,7 @@ public class GameBoard extends BlockPanel implements ActionListener{
         Block currentMatchBlock = null;
 
         for (int direction = 0; direction < 4; direction++) {
-            System.out.println("Direction: " + direction);
+//            System.out.println("Direction: " + direction);
             for (int i = HIDDEN; i < ROWS + HIDDEN; i++) {
                 for (int j = 0; j < COLS; j++) {
                     if (DB) System.out.println("ROW: " + i + ", COLUMN: " + j);
@@ -379,10 +464,10 @@ public class GameBoard extends BlockPanel implements ActionListener{
                         if (DB) System.out.println("2nd Continuing.");
                         continue;
                     }
-                    System.out.println("Is current Match Block null? " +
-                            (currentMatchBlock == null));
+//                    System.out.println("Is current Match Block null? " +
+//                            (currentMatchBlock == null));
                     if (currentMatchBlock == null) {
-                        System.out.println("HERE");
+//                        System.out.println("HERE");
                         if (grid[i][j] == null) {
                             continue;
                         } else {
@@ -394,8 +479,8 @@ public class GameBoard extends BlockPanel implements ActionListener{
 //                                currentMatchBlock.toString());
                     }
 
-                    System.out.println(currentMatchBlock.toString());
-                    if (currentMatchBlock.toString().equals("W ")) {
+//                    System.out.println(currentMatchBlock.toString());
+                    if (currentMatchBlock == null) {
 //                        System.out.println("Throwing out: " + currentMatchBlock.toString());
                         currentMatchBlock = null;
                         continue;
@@ -452,8 +537,11 @@ public class GameBoard extends BlockPanel implements ActionListener{
         return foundMatch;
     }
 
+    /**
+     * Turns the tiles that need to be removed white.
+     */
     public void turnTilesWhite() {
-        System.out.println("Removing tiles...");
+//        System.out.println("Removing tiles...");
         for (int rmI = 0; rmI < ROWS + HIDDEN; rmI++) {
             for (int rmJ = 0; rmJ < COLS; rmJ++) {
                 if (boardRemoval[rmI][rmJ] == 1) {
@@ -463,29 +551,38 @@ public class GameBoard extends BlockPanel implements ActionListener{
         }
     }
 
+    /**
+     * Removes the blocks that have been indicated as a match
+     */
     public void removeTiles() {
-        System.out.println("Removing tiles...");
+//        System.out.println("Removing tiles...");
         for (int rmI = 0; rmI < ROWS + HIDDEN; rmI++) {
             for (int rmJ = 0; rmJ < COLS; rmJ++) {
                 if (boardRemoval[rmI][rmJ] == 1) {
                     grid[rmI][rmJ] = null;
+                    updateScoreListeners();
                     score++;
+                    boardRemoval[rmI][rmJ] = 0;
+                    level = (int)(score /10);
                 }
             }
         }
     }
 
+    /**
+     * Moves everything down
+     */
     public void moveDown() {
-        System.out.println("Total tiles removed: " + score);
+//        System.out.println("Total tiles removed: " + score);
         for (int j = 0; j < COLS; j++) {
             for (int i = ROWS + HIDDEN - 1; i >= 0; i--) {
                 int counter = 0;
-                System.out.println("ROWS: " + i + " COLS: " + j);
+//                System.out.println("ROWS: " + i + " COLS: " + j);
 
                 while (grid[i][j] == null) {
                     for (int k = i; k > 0; k--) {
                         grid[k][j] = grid[k - 1][j];
-                        System.out.println("GG");
+//                        System.out.println("GG");
                     }
                     counter++;
                     if (counter == 5) break;
@@ -495,6 +592,11 @@ public class GameBoard extends BlockPanel implements ActionListener{
         }
     }
 
+
+    /**
+     * Unit testing.
+     * @param args
+     */
     public static void main(String args[]) {
         JFrame frame = new JFrame();
         GameBoard panel = new GameBoard();

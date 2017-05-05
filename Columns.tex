@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{wasysym}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{comment}
+
+\title{Columns README}
+\author{Christopher Skinner}
+\begin{document}
+	\maketitle
+
+\noindent\begin{enumerate}[leftmargin=1in]
+\item\textbf{Game Play}
+	\begin{itemize}
+		\item How to play the game?\\
+			Use either A, W, S, D or $<$, $\wedge$, $\vee$, $>$\\
+			Use space to immediate put the piece to the bottom.
+		\item How is the game scored?\\
+			The scoring is simple, for every block removed, you get a single point.
+			
+	\end{itemize}
+
+\item\textbf{Description of program internals}
+	\begin{itemize}
+		\item Description of classes:\\
+		There are simple Blocks that are created, it was adapted from Brooke Chenoweth's Tetris game, there is also a ColumnPiece2D that creates the 1x3 piece of random blocks. The class BlockPanel extends JPanel and creates the grid and keeps track of where the blocks are in parallel with BlockManager. GameBoard then extends BlockPanel and handles how the blocks move, when they are placed, and other things. The Columns class then takes everything and deals with the scoring, pause button and all of the layout of the general frame.
+		
+		\item Algorithm details:\\
+		The generation of random pieces is done with the Random object in java.util library and then uses a random number generator from the Math library as a seed. Moving pieces is done with simple action listeners and checking to see if it is a valid area. Placing is done by checking to see if the lowest index of the piece is at the bottom of the board and then transfers the data to the board that then checks to see if there is matches and then removes them. Detecting lines is done by looking in 4 different directions and looks throughout the entire board (this could be done by just looking at where the block landed, and after that of where blocks moved). Removing blocks is done in a special boardRemoval grid and if the block is to be removed, is then marked with a true in the grid and then reset after the block is set to null. Dropping the blocks checks for null, and then drops the blocks until there is a non-null block or has done the action 5 times (since this is the maximum amount you could possibly match vertically.)
+		
+	\end{itemize}
+
+\item\textbf{Extras}
+	\begin{itemize}
+		\item I incorporated a level system.
+	\end{itemize}
+
+\item\textbf{Bugs and Feature Requests}
+	\begin{itemize}
+		\item Bugs\\
+		There is a bug in the colour matching algorithm in which it sometimes sees things that are 2 in a row sometimes get removed or just random blocks get removed somehow. I feel like it is something wrong with the resetting of something, whether that is with the actual board or the boardRemoval. \\
+		There is an issue where the blocks don't hit the block it is dropping on if there is a match, but it only does it for that current match. I worked at getting it to repaint there, but it ended up just not happening. If there is a chain, it still works as wanted where it shows the next match.\\
+		Does not correctly indicate that the game is over.
+		
+		\item Feature Requests
+			\begin{itemize}
+				\item Changing all the block colors when the level changes.
+				\item Creating a grid
+				\item Creating a small indicator of where the block will land and what will be deleted if the block were to land where it does. I imagine one would create a ghostGrid for this to display at a low opacity.
+				\item Two player mode (this would be awesome.) I actually don't feel like this would be insanely hard. Just would take some thinking and time.
+			\end{itemize}
+		
+	\end{itemize}
+
+\end{enumerate}
+
+\end{document}
